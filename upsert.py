@@ -1,4 +1,4 @@
-class Upsert(object):
+class Upsert:
   def __init__(self, connection, table_name):
     self.connection = connection
     self.table_name = table_name
