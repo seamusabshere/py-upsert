@@ -4,6 +4,6 @@ class Upsert:
     self.table_name = table_name
 
   def row(self, selector):
-    sql = "INSERT INTO %s (%s) VALUES ('%s')"  % (self.table_name, selector.keys()[0], selector.values()[0])
+    template = 'INSERT INTO "%s" ("%s")' % (self.table_name, selector.keys()[0])
     cur = self.connection.cursor()
-    cur.execute(sql)
+    cur.execute((template + " VALUES (%s)"), (selector.values()[0],))
