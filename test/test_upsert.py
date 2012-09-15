@@ -3,7 +3,11 @@ import psycopg2
 import MySQLdb
 import sqlite3
 
-from upsert import *
+# like ruby's bundler?
+import sys
+sys.path.append('upsert')
+
+from upsert import Upsert
 
 def create_table(connection):
     cur = connection.cursor()

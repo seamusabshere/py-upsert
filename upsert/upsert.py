@@ -1,6 +1,9 @@
 import codecs
 
 class Upsert:
+    """
+    TBD the description oh yah
+    """
 
     def __init__(self, connection, table_name):
         self.connection = connection
