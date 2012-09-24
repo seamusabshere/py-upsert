@@ -1,4 +1,5 @@
 from upsert.ansi_ident import AnsiIdent
+from upsert.row import Row
 from upsert.sqlite3 import Sqlite3
 
 class Upsert:

@@ -1,15 +1,7 @@
 import upsert
 
-class Row:
-    def __init__(self, parent, selector, setter):
-        self.parent = parent
-        self.selector = selector
-        self.setter = setter
-        for missing in (set(self.selector.keys()) - set(self.setter.keys())):
-            self.setter[missing] = self.selector[missing]
-
 class Sqlite3(upsert.AnsiIdent):
-    row_class = Row
+    row_class = upsert.Row
 
     def __init__(self, parent):
         self.parent = parent
