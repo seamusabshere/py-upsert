@@ -1,6 +1,6 @@
 class Postgresql(AnsiIdent):
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, controller):
+        self.controller = controller
 
     def execute(self, template, values = ()):
-        self.parent.cursor.execute(template, values)
+        self.controller.cursor.execute(template, values)

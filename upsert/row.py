@@ -2,8 +2,8 @@ import copy
 from collections import OrderedDict
 
 class Row:
-    def __init__(self, parent, selector, setter):
-        self.parent = parent
+    def __init__(self, controller, selector, setter):
+        self.controller = controller
         setter = copy.copy(setter)
         for missing in (set(selector.keys()) - set(setter.keys())):
             setter[missing] = selector[missing]
