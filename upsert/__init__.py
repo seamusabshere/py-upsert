@@ -1,3 +1,20 @@
+# http://micheles.googlecode.com/hg/decorator/documentation.html
+from decorator import decorator
+def _memoize(func, *args, **kw):
+    if kw: # frozenset is used to ensure hashability
+        key = args, frozenset(kw.iteritems())
+    else:
+        key = args
+    cache = func.cache # attributed added by memoize
+    if key in cache:
+        return cache[key]
+    else:
+        cache[key] = result = func(*args, **kw)
+        return result
+def memoize(f):
+    f.cache = {}
+    return decorator(_memoize, f)
+
 from upsert.ansi_ident import AnsiIdent
 from upsert.row import Row
 from upsert.sqlite3 import Sqlite3
@@ -23,6 +40,11 @@ class Upsert:
         self.buffer.append(self.row_class(self, selector, setter))
         self.ready()
         return None
+
+    def execute3(self, template, idents, values):
+        pass1 = self.fill_ident_placeholders(template, idents)
+        print pass1
+        self.execute(pass1, values)
     
     def fill_ident_placeholders(self, template, idents):
         quoted = tuple(self.quote_ident(str) for str in idents)
