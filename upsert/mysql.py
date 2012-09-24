@@ -45,7 +45,7 @@ class MergeFunction:
         idents.append(self.name)
 
         # args
-        chunks.append(','.join('%s ' + ('%s' % (name_and_type[k],)) for k in (self.selector_keys + self.setter_keys)))
+        chunks.append(','.join('%s ' + name_and_type[k] for k in (self.selector_keys + self.setter_keys)))
         idents.extend(k+'_SEL' for k in self.selector_keys)
         idents.extend(k+'_SET' for k in self.setter_keys)
 
