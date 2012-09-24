@@ -8,19 +8,6 @@ import sqlite3
 
 from upsert import Upsert
 
-def create_table(cursor, t):
-    cursor.execute("""
-    DROP TABLE IF EXISTS %s;
-""" % t)
-    cursor.execute("""
-    CREATE TABLE %s (
-        "name" CHARACTER VARYING(255) PRIMARY KEY,
-        color CHARACTER VARYING(255),
-        license INTEGER,
-        weight FLOAT
-    );
-""" % t)
-
 class OneByOne:
     def test_insert_1_0(self):
         #print(sys._getframe(0).f_code.co_name)
@@ -188,16 +175,32 @@ class OneByOne:
 #     def executeSql(self, template, values = ()):
 #         self.cursor.execute(template, values)
 
-
-class TestUpsertSqlite(unittest.TestCase, OneByOne):
+class MyTestCase(unittest.TestCase):
     def setUp(self):
-        self.connection = sqlite3.connect(':memory:')
+        self.connection = self.get_connection()
         self.cursor = self.connection.cursor()
-        create_table(self.cursor, 'pets')
+        self.create_table('pets')
 
     def tearDown(self):
         self.cursor.close()
         self.connection.close()
+
+    def create_table(self, t):
+        self.executeSql("""
+        DROP TABLE IF EXISTS %s;
+    """ % t)
+        self.executeSql("""
+        CREATE TABLE %s (
+            "name" CHARACTER VARYING(255) PRIMARY KEY,
+            color CHARACTER VARYING(255),
+            license INTEGER,
+            weight FLOAT
+        );
+    """ % t)
+
+class TestUpsertSqlite(MyTestCase, OneByOne):
+    def get_connection(self):
+        return sqlite3.connect(':memory:')
 
     def executeSql(self, template, values = ()):
         template = template.replace('%s', '?')
