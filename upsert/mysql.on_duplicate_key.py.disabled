@@ -1,0 +1,65 @@
+
+# fails 2_2_miss of course
+
+import upsert
+import itertools
+
+class Row(upsert.Row):
+    def __init__(self, controller, selector, setter):
+        self.original_setter_keys = setter.keys()
+        upsert.Row.__init__(self, controller, selector, setter)
+
+class Mysql:
+    row_class = Row
+
+    def __init__(self, controller):
+        self.controller = controller
+        self.buffer = []
+
+    # expects placeholders as ?
+    def execute(self, template, values = ()):
+        print template
+        print values
+        template = template.replace('?', '%s')
+        self.controller.cursor.execute(template, values)
+
+    def quote_ident(self, str, errors="strict"):
+        # unless it's in ANSI mode
+        return '`' + str + '`'
+
+    def charter_row(self):
+        return self.buffer[0]
+
+    def setter(self):
+        return self.charter_row().setter.keys()
+
+    def original_setter(self):
+        return self.charter_row().original_setter_keys
+
+    def ready(self):
+        if len(self.buffer) == 0:
+            return
+        row_placeholders = [','.join(['?']*len(self.setter()))]*len(self.buffer)
+        template = self.insert_sql() + ' VALUES (' + '),('.join(row_placeholders) + ') ' + self.update_sql()
+        self.execute(template, self.values())
+
+    def insert_sql(self):
+        pi = ','.join(['%s']*len(self.setter()))
+        a = 'INSERT INTO %s (' + pi + ')'
+        b = [self.controller.table_name] + self.setter()
+        return self.controller.fill_ident_placeholders(a, b)
+
+    def update_sql(self):
+        pi = []
+        # should probably use a lambda and a map here
+        for column in self.setter():
+            if column in self.original_setter():
+                pi.append("%s=VALUES(%s)")
+            else:
+                pi.append("%s=%s")
+        a = 'ON DUPLICATE KEY UPDATE ' + ','.join(pi)
+        b = itertools.chain.from_iterable([column, column] for column in self.setter())
+        return self.controller.fill_ident_placeholders(a, list(b))
+
+    def values(self):
+        return list(itertools.chain.from_iterable(row.setter.values() for row in self.buffer))
