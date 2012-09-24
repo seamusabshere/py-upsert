@@ -19,16 +19,12 @@ class MergeFunction:
     def __init__(self, controller, selector_keys, setter_keys):
         self.controller = controller
         self.selector_keys = list(selector_keys)
-        print 'A'
-        print self.selector_keys
         self.setter_keys = list(setter_keys)
         self.name = MergeFunction.name(controller, self.selector_keys, self.setter_keys)
         self.call_template = controller.fill_ident_placeholders('CALL %s', (self.name,)) + '(' + ','.join(['?']*(len(self.selector_keys) + len(self.setter_keys))) + ')'
         self.create_or_replace()
 
     def execute(self, row):
-        print 'B'
-        print row.selector.keys()
         self.controller.execute(self.call_template, (row.selector.values() + row.setter.values()))
 
     def drop(self):

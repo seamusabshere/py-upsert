@@ -43,7 +43,6 @@ class Upsert:
 
     def execute3(self, template, idents, values):
         pass1 = self.fill_ident_placeholders(template, idents)
-        print pass1
         self.execute(pass1, values)
     
     def fill_ident_placeholders(self, template, idents):
