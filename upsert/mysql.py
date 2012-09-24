@@ -25,13 +25,24 @@ class MergeFunction:
         self.create_or_replace()
 
     def execute(self, row):
-        self.controller.execute(self.call_template, (row.selector.values() + row.setter.values()))
+        first_try = True
+        try:
+            self.controller.execute(self.call_template, (row.selector.values() + row.setter.values()))
+        except Exception as e:
+            if first_try and (str(e)[0:6] == '(1305,'):
+                first_try = False
+                print '[upsert] Trying to recreate function {0}'.format(self.name)
+                self.create_or_replace()
+            else:
+                raise
 
     def drop(self):
         self.controller.execute3('DROP PROCEDURE IF EXISTS %s', (self.name,), ())
 
     # http://stackoverflow.com/questions/11371479/how-to-translate-postgresql-merge-db-aka-upsert-function-into-mysql/
     def create_or_replace(self):
+        print '[upsert] Creating or replacing function {0}'.format(self.name)
+        
         self.drop()
 
         self.controller.execute3('SHOW COLUMNS FROM %s', (self.controller.table_name,), ())
