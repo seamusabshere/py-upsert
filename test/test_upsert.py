@@ -150,19 +150,6 @@ class OneByOne:
         self.assertEqual(123.456, res[2]) 
         self.assertEqual(555, res[3])
 
-# class TestUpsertPostgresql(unittest.TestCase, OneByOne):
-#     def setUp(self):
-#         self.connection = psycopg2.connect('dbname=test_py_upsert')
-#         self.cursor = self.connection.cursor()
-#         create_table(self.cursor)
-
-#     def tearDown(self):
-#         self.connection.close()
-
-#     def execute_sql(self, template, values = ()):
-#         self.cursor.execute(template, values)
-
-
 class MyTestCase(unittest.TestCase):
     def setUp(self):
         self.connection = self.get_connection()
@@ -175,16 +162,16 @@ class MyTestCase(unittest.TestCase):
 
     def create_table(self, t):
         self.execute_sql("""
-        DROP TABLE IF EXISTS %s;
-    """ % t)
+            DROP TABLE IF EXISTS %s;
+        """ % t)
         self.execute_sql("""
-        CREATE TABLE %s (
-            "name" CHARACTER VARYING(255) PRIMARY KEY,
-            color CHARACTER VARYING(255) UNIQUE,
-            license INTEGER,
-            weight FLOAT
-        );
-    """ % t)
+            CREATE TABLE %s (
+                "name" CHARACTER VARYING(255) PRIMARY KEY,
+                color CHARACTER VARYING(255) UNIQUE,
+                license INTEGER,
+                weight FLOAT
+            );
+        """ % t)
 
 class TestUpsertSqlite(MyTestCase, OneByOne):
     def get_connection(self):
@@ -197,6 +184,13 @@ class TestUpsertSqlite(MyTestCase, OneByOne):
 class TestUpsertMysql(MyTestCase, OneByOne):
     def get_connection(self):
         return MySQLdb.connect(user="root",passwd="password",db="test_py_upsert")
+
+    def execute_sql(self, template, values = ()):
+        self.cursor.execute(template, values)
+
+class TestUpsertPostgresql(MyTestCase, OneByOne):
+    def get_connection(self):
+        return psycopg2.connect('dbname=test_py_upsert')
 
     def execute_sql(self, template, values = ()):
         self.cursor.execute(template, values)

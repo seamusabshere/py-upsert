@@ -11,12 +11,12 @@ class MergeFunction(upsert.MergeFunction):
         try:
             self.controller.execute(self.call_template, (row.selector.values() + row.setter.values()))
         except Exception as e:
-            if first_try and (str(e)[0:6] == '(1305,'):
+            if first_try and str(type(e)) == "<class '_mysql_exceptions.OperationalError'>" and e.args[0] == 1305:
                 first_try = False
                 print '[upsert] Trying to recreate function {0}'.format(self.name)
                 self.create_or_replace()
             else:
-                raise
+                raise e
 
     def drop(self):
         self.controller.execute3('DROP PROCEDURE IF EXISTS %s', (self.name,), ())
@@ -57,7 +57,6 @@ class MergeFunction(upsert.MergeFunction):
         chunks.append(setter_sql)
         idents.extend(setter_idents)
 
-        # (already made these above)
         chunks.append(selector_sql)
         idents.extend(selector_idents)
 

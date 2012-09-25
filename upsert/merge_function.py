@@ -24,6 +24,6 @@ class MergeFunction:
         self.create_or_replace()
 
     def create_or_replace(self):
-        print '[upsert] Creating or replacing function {0}'.format(self.name)
+        # print '[upsert] Creating or replacing function {0}'.format(self.name)
         self.drop()
         self.create()

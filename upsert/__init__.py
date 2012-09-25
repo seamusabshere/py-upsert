@@ -20,6 +20,7 @@ from upsert.merge_function import MergeFunction
 from upsert.row import Row
 from upsert.sqlite3 import Sqlite3
 from upsert.mysql import Mysql
+from upsert.postgresql import Postgresql
 
 class Upsert:
     """
@@ -50,12 +51,8 @@ class Upsert:
         quoted = tuple(self.quote_ident(str) for str in idents)
         return template % quoted
 
-    sqlite3_key =     "<type 'sqlite3.Cursor'>"
-    mysql_key =       "<class 'MySQLdb.cursors.Cursor'>"
-    # postgresql_key =  "<type 'psycopg2._psycopg.connection'>"
-
     implementations = {
-        sqlite3_key:    Sqlite3,
-        mysql_key:      Mysql,
-        # postgresql_key: Postgresql
+        "<type 'sqlite3.Cursor'>":              Sqlite3,
+        "<class 'MySQLdb.cursors.Cursor'>":     Mysql,
+        "<type 'psycopg2._psycopg.cursor'>":    Postgresql
     }
