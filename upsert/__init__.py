@@ -16,6 +16,7 @@ def memoize(f):
     return decorator(_memoize, f)
 
 from upsert.ansi_ident import AnsiIdent
+from upsert.merge_function import MergeFunction
 from upsert.row import Row
 from upsert.sqlite3 import Sqlite3
 from upsert.mysql import Mysql

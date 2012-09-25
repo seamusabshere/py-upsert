@@ -1,28 +1,10 @@
 import upsert
 import itertools
-import hashlib
 
-class MergeFunction:
+class MergeFunction(upsert.MergeFunction):
     @classmethod
-    @upsert.memoize
-    def lookup(cls, controller, selector_keys, setter_keys):
-        return cls(controller, selector_keys, setter_keys)
-
-    @classmethod
-    def name(cls, controller, selector_keys, setter_keys):
-        uniq = '_'.join([controller.table_name, 'SEL' ] + selector_keys + ['SET'] + setter_keys)
-        if (len(uniq) + 7) > 63:
-            md5 = hashlib.md5(uniq).hexdigest()
-            uniq = uniq[0:63-16-7] + md5[0:16]
-        return 'upsert_' + uniq
-
-    def __init__(self, controller, selector_keys, setter_keys):
-        self.controller = controller
-        self.selector_keys = list(selector_keys)
-        self.setter_keys = list(setter_keys)
-        self.name = self.__class__.name(controller, self.selector_keys, self.setter_keys)
-        self.call_template = controller.fill_ident_placeholders('CALL %s', (self.name,)) + '(' + ','.join(['?']*(len(self.selector_keys) + len(self.setter_keys))) + ')'
-        self.create_or_replace()
+    def call_template(cls, controller, name, selector_keys, setter_keys):
+        return controller.fill_ident_placeholders('CALL %s', (name,)) + '(' + ','.join(['?']*(len(selector_keys) + len(setter_keys))) + ')'
 
     def execute(self, row):
         first_try = True
@@ -40,11 +22,7 @@ class MergeFunction:
         self.controller.execute3('DROP PROCEDURE IF EXISTS %s', (self.name,), ())
 
     # http://stackoverflow.com/questions/11371479/how-to-translate-postgresql-merge-db-aka-upsert-function-into-mysql/
-    def create_or_replace(self):
-        print '[upsert] Creating or replacing function {0}'.format(self.name)
-        
-        self.drop()
-
+    def create(self):
         self.controller.execute3('SHOW COLUMNS FROM %s', (self.controller.table_name,), ())
         name_and_type = { r[0]: r[1] for r in self.controller.cursor.fetchall() }
         
