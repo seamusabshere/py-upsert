@@ -6,7 +6,7 @@ class MergeFunction:
     @classmethod
     @upsert.memoize
     def lookup(cls, controller, selector_keys, setter_keys):
-        return MergeFunction(controller, selector_keys, setter_keys)
+        return cls(controller, selector_keys, setter_keys)
 
     @classmethod
     def name(cls, controller, selector_keys, setter_keys):
@@ -20,7 +20,7 @@ class MergeFunction:
         self.controller = controller
         self.selector_keys = list(selector_keys)
         self.setter_keys = list(setter_keys)
-        self.name = MergeFunction.name(controller, self.selector_keys, self.setter_keys)
+        self.name = self.__class__.name(controller, self.selector_keys, self.setter_keys)
         self.call_template = controller.fill_ident_placeholders('CALL %s', (self.name,)) + '(' + ','.join(['?']*(len(self.selector_keys) + len(self.setter_keys))) + ')'
         self.create_or_replace()
 
