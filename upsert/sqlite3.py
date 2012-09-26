@@ -33,4 +33,6 @@ class Sqlite3(upsert.AnsiIdent):
     # so is this following DB-API and the others are breaking it?
     # it expects placeholders as ?
     def execute(self, template, values = ()):
-        self.controller.cursor.execute(template, values)
+        cur = self.controller.cursor
+        cur.execute(template, values)
+        cur.connection.commit()

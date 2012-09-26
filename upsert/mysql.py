@@ -124,7 +124,9 @@ class Mysql:
     # expects placeholders as ?
     def execute(self, template, values = ()):
         template = template.replace('?', '%s')
-        self.controller.cursor.execute(template, values)
+        cur = self.controller.cursor
+        cur.execute(template, values)
+        cur.connection.commit()
 
     def quote_ident(self, str, errors="strict"):
         # unless it's in ANSI mode

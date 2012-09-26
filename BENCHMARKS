@@ -1,0 +1,86 @@
+(upsert)Alzabo:~/code/py-upsert (master) $ find . -name "*.pyc" | xargs rm && DB=mysql python prove_speed.py
+** Running benchmarks on mysql **
+/Users/seamusabshere/code/py-upsert/upsert/mysql.py:128: Warning: PROCEDURE test_py_upsert.upsert_pets_SEL_name_SET_birthday_good_home_add3223953b0439b128 does not exist
+  cur.execute(template, values)
+
+Benchmark Report
+================
+
+Speed
+-----
+
+      name | rank | runs |   mean |      sd | timesBaseline
+-----------|------|------|--------|---------|--------------
+    upsert |    1 |    5 | 0.4526 | 0.02985 |           1.0
+sqlalchemy |    2 |    5 |  2.002 | 0.02176 | 4.42301047405
+
+Each of the above 10 runs were run in random, non-consecutive order by
+`benchmark` v0.1.5 (http://jspi.es/benchmark) with Python 2.7.3
+Darwin-10.8.0-x86_64 on 2012-09-26 01:19:37.
+
+.
+----------------------------------------------------------------------
+Ran 1 test in 2.541s
+
+OK
+(upsert)Alzabo:~/code/py-upsert (master) $ find . -name "*.pyc" | xargs rm && DB=postgresql python prove_speed.py
+** Running benchmarks on postgresql **
+
+Benchmark Report
+================
+
+Speed
+-----
+
+      name | rank | runs |  mean |     sd | timesBaseline
+-----------|------|------|-------|--------|--------------
+    upsert |    1 |    5 | 1.585 | 0.6773 |           1.0
+sqlalchemy |    2 |    5 | 3.515 | 0.5634 |  2.2185103326
+
+Each of the above 10 runs were run in random, non-consecutive order by
+`benchmark` v0.1.5 (http://jspi.es/benchmark) with Python 2.7.3
+Darwin-10.8.0-x86_64 on 2012-09-26 01:20:29.
+
+.
+----------------------------------------------------------------------
+Ran 1 test in 3.850s
+
+OK
+(upsert)Alzabo:~/code/py-upsert (master) $ find . -name "*.pyc" | xargs rm && DB=sqlite3 python prove_speed.py
+** Running benchmarks on sqlite3 **
+
+Benchmark Report
+================
+
+Speed
+-----
+
+      name | rank | runs |  mean |     sd | timesBaseline
+-----------|------|------|-------|--------|--------------
+    upsert |    1 |    5 | 2.885 | 0.1864 |           1.0
+sqlalchemy |    2 |    5 | 3.839 | 0.2623 | 1.33082148027
+
+Each of the above 10 runs were run in random, non-consecutive order by
+`benchmark` v0.1.5 (http://jspi.es/benchmark) with Python 2.7.3
+Darwin-10.8.0-x86_64 on 2012-09-26 01:21:16.
+
+F
+======================================================================
+FAIL: test_same (__main__.Correctness)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "prove_speed.py", line 125, in test_same
+    self.assertEqual(correct, mine)
+AssertionError: Lists differ: [(u'Abigail Pfannerstill', Non... != [(u'Abigail Pfannerstill', Non...
+
+First differing element 0:
+(u'Abigail Pfannerstill', None, u'Rerum debitis mollitia omnis sit odio et quos laudantium dolores.Et esse quis quidem necessitatibus quas autem aut quia.Et similique voluptas quas natus et.', 1, 5220763199.802314, u'2003-11-08 17:27:43.000000', None, 62448678, u'2001-08-12', u'Eaque quis consequatur ipsam quas.  Porro et eum delectus earum ad consequatur amet assumenda et.  Saepe blanditiis eos quia quasi eligendi voluptas maxime.Fuga eos natus dolorem.  Repellendus quibusdam porro sapiente.  Possimus eius consequatur ea voluptate.Vitae nemo dolore voluptas omnis alias mollitia ullam cupiditate fugit.  Incidunt hic perferendis ut porro provident.  Qui ut incidunt vel deserunt.')
+(u'Abigail Pfannerstill', None, u'Rerum debitis mollitia omnis sit odio et quos laudantium dolores.Et esse quis quidem necessitatibus quas autem aut quia.Et similique voluptas quas natus et.', 1, 5220763199.802314, u'2003-11-08 17:27:43', None, 62448678, u'2001-08-12', u'Eaque quis consequatur ipsam quas.  Porro et eum delectus earum ad consequatur amet assumenda et.  Saepe blanditiis eos quia quasi eligendi voluptas maxime.Fuga eos natus dolorem.  Repellendus quibusdam porro sapiente.  Possimus eius consequatur ea voluptate.Vitae nemo dolore voluptas omnis alias mollitia ullam cupiditate fugit.  Incidunt hic perferendis ut porro provident.  Qui ut incidunt vel deserunt.')
+
+Diff is 253497 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 1 test in 6.993s
+
+FAILED (failures=1)
+(upsert)Alzabo:~/code/py-upsert (master) $ 
