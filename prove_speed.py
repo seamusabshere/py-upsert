@@ -1,24 +1,28 @@
+import os
+db = os.environ.get('DB', 'postgresql')
+
 import copy
 
 # http://stackoverflow.com/questions/553303/generate-a-random-date-between-two-other-dates
 import random
 from datetime import date, datetime, timedelta
 def random_datetime(start, end):
-    return start + timedelta(
-        seconds=random.randint(0, int((end - start).total_seconds())))
+    r = start + timedelta(seconds=random.randint(0, int((end - start).total_seconds())))
+    if db == 'sqlite3' and r.__class__ == datetime:
+        r = r.replace(microsecond=5000)
+    return r
 
 # this is python-faker not faker
 import faker
 
 lotsa_records = []
-names = []
-for _ in xrange(333):
-    names.append(faker.name.name())
-for _ in xrange(1000):
-    selector = { 'name': random.choice(names) }
+selectors = []
+for _ in xrange(150):
+    selectors.append({ 'name': faker.name.name(), 'tag_number': random.randint(0, 1e8)})
+for _ in xrange(500):
+    selector = random.choice(selectors)
     setter = {
         'lovability':           random.random() * 1e11,
-        'tag_number':           random.randint(0, 1e8),
         'spiel':                ''.join(faker.lorem.sentences()),
         'good':                 True,
         'birthday':             random_datetime(date(2001, 7, 14), date.today()),
@@ -26,8 +30,6 @@ for _ in xrange(1000):
         'home_address':         ''.join(faker.lorem.paragraphs()),
     }
     lotsa_records.append([selector, setter])
-
-import os
 
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
@@ -48,11 +50,10 @@ class Pet(Base):
     birthday = Column(Date)
     home_address = Column(Text)
 
+Index('foobar', Pet.name, Pet.tag_number, unique=True)
+
 from upsert import Upsert
 
-import os
-
-db = os.environ.get('DB', 'postgresql')
 if db == 'mysql':
     import MySQLdb
     os.system('mysql -u root -ppassword -e "drop database test_py_upsert"')
@@ -61,7 +62,8 @@ if db == 'mysql':
     conn1 = MySQLdb.connect(user="root",passwd="password",db="test_py_upsert")
 elif db == 'sqlite3':
     import sqlite3
-    os.unlink('foobar.sqlite3')
+    if os.path.exists('foobar.sqlite3'):
+        os.unlink('foobar.sqlite3')
     engine = create_engine('sqlite:///foobar.sqlite3', echo=False)
     conn1 = sqlite3.connect('foobar.sqlite3')
 elif db == 'postgresql':
@@ -85,7 +87,6 @@ def run_sqlalchemy():
         full_setter = copy.copy(selector)
         full_setter.update(setter)
         pet = session.query(Pet).filter_by(**selector).first()
-        # print
         if pet is None:
             pet = Pet(**full_setter)
             session.add(pet)
@@ -93,14 +94,39 @@ def run_sqlalchemy():
             for (k, v) in full_setter.items():
                 pet.__setattr__(k, v)
             session.merge(pet)
-        session.commit()
+        session.commit() # otherwise it's cheating by keeping everything in memory
     session.close()
+
+def run_naive():
+    cur = conn1.cursor()
+    cur.execute('delete from pets')
+    for (selector, setter) in lotsa_records:
+        full_setter = copy.copy(selector)
+        full_setter.update(setter)
+        where_sql = ' AND '.join("{0} = %s".format(k) for k in selector.keys())
+        template = "SELECT COUNT(*) FROM pets WHERE {}".format(where_sql)
+        if db == 'sqlite3':
+            template = template.replace('%s', '?')
+        cur.execute(template, selector.values())
+        if cur.fetchone()[0] > 0:
+            set_sql = ','.join("{0} = %s".format(k) for k in full_setter.keys())
+            template = "UPDATE pets SET {} WHERE {}".format(set_sql, where_sql)
+            if db == 'sqlite3':
+                template = template.replace('%s', '?')
+            cur.execute(template, full_setter.values()+selector.values())
+        else:
+            column_names = ','.join(full_setter.keys())
+            values_sql = ','.join(['%s']*len(full_setter))
+            template = "INSERT INTO pets ({}) VALUES ({})".format(column_names, values_sql)
+            if db == 'sqlite3':
+                template = template.replace('%s', '?')
+            cur.execute(template, full_setter.values())
+        cur.connection.commit()
+    cur.close()
 
 def run_upsert():
     cur = conn1.cursor()
     cur.execute('delete from pets')
-    cur.close()
-    cur = conn1.cursor()
     upsert = Upsert(cur, 'pets')
     for (selector, setter) in lotsa_records:
         upsert.row(selector, setter)
@@ -109,8 +135,23 @@ def run_upsert():
 import unittest
 
 class Correctness(unittest.TestCase):
-    def test_same(self):
+    def test_sqlalchemy(self):
         run_sqlalchemy()
+        cur = conn1.cursor()
+        cur.execute('select * from pets order by name')
+        correct = cur.fetchall()
+        cur.close()
+        self.assertGreater(len(correct), 10)
+
+        run_upsert()
+        cur = conn1.cursor()
+        cur.execute('select * from pets order by name')
+        mine = cur.fetchall()
+        cur.close()
+        self.assertEqual(correct, mine)
+
+    def test_naive(self):
+        run_naive()
         cur = conn1.cursor()
         cur.execute('select * from pets order by name')
         correct = cur.fetchall()
@@ -129,11 +170,12 @@ import benchmark
 class Speed(benchmark.Benchmark):
     def test_upsert(self):
         run_upsert()
-        conn1.commit()
 
     def test_sqlalchemy(self):
         run_sqlalchemy()
 
+    def test_naive(self):
+        run_naive()
 
 if __name__ == '__main__':
     benchmark.main(format="markdown", numberFormat="%.4g")
