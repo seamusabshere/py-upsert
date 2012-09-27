@@ -24,7 +24,9 @@ from upsert.postgresql import Postgresql
 
 class Upsert:
     """
-    TBD the description oh yah
+    Upsert for MySQL, PostgreSQL, SQLite3.
+
+    Sister library to https://github.com/seamusabshere/upsert (Ruby).
     """
 
     def __init__(self, cursor, table_name):
