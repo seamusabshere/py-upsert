@@ -48,7 +48,7 @@ class Upsert:
     def execute3(self, template, idents, values):
         pass1 = self.fill_ident_placeholders(template, idents)
         self.execute(pass1, values)
-    
+
     def fill_ident_placeholders(self, template, idents):
         quoted = tuple(self.quote_ident(str) for str in idents)
         return template % quoted
@@ -56,5 +56,6 @@ class Upsert:
     implementations = {
         "<type 'sqlite3.Cursor'>":              Sqlite3,
         "<class 'MySQLdb.cursors.Cursor'>":     Mysql,
-        "<type 'psycopg2._psycopg.cursor'>":    Postgresql
+        "<type 'psycopg2._psycopg.cursor'>":    Postgresql,
+        "<type 'psycopg2.extensions.cursor'>":  Postgresql
     }
