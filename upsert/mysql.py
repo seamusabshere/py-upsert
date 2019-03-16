@@ -13,7 +13,7 @@ class MergeFunction(upsert.MergeFunction):
         except Exception as e:
             if first_try and str(type(e)) == "<class '_mysql_exceptions.OperationalError'>" and e.args[0] == 1305:
                 first_try = False
-                print '[upsert] Trying to recreate function {0}'.format(self.name)
+                print ('[upsert] Trying to recreate function {0}'.format(self.name))
                 self.create_or_replace()
             else:
                 raise e

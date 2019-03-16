@@ -13,7 +13,7 @@ class MergeFunction(upsert.MergeFunction):
         except Exception as e:
             if first_try and str(type(e)) == "<class 'psycopg2.ProgrammingError'>" and e.pgcode == 42883:
                 first_try = False
-                print '[upsert] Trying to recreate function {0}'.format(self.name)
+                print ('[upsert] Trying to recreate function {0}'.format(self.name))
                 self.create_or_replace()
             else:
                 raise e

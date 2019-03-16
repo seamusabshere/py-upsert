@@ -54,7 +54,7 @@ class Upsert:
         return template % quoted
 
     implementations = {
-        "<type 'sqlite3.Cursor'>":              Sqlite3,
+        "<class 'sqlite3.Cursor'>":             Sqlite3,
         "<class 'MySQLdb.cursors.Cursor'>":     Mysql,
         "<type 'psycopg2._psycopg.cursor'>":    Postgresql,
         "<type 'psycopg2.extensions.cursor'>":  Postgresql
